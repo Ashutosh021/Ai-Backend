@@ -2,8 +2,9 @@ const axios = require('axios');
 const imageModel = require('../models/imageModel'); 
 
 const historyData = async (req, res) => {
+  const {authToken}=req.body;
   try {
-    const history = await imageModel.find();
+    const history = await imageModel.find(authToken);
     res.json({
       status: "success",
       msg: "Data fetched successfully",
