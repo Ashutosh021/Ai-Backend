@@ -3,6 +3,7 @@ const imageRouter = require("./routes/imageRouter.js");
 const authRouter = require("./routes/authRouter.js");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+require('dotenv').config()
 
 const app = express();
 
@@ -20,7 +21,7 @@ app.use((req, res, next) => {
     token = req.headers.authorization.split(" ")[1];
     }
     try {
-        jwt.verify(token, "my-secret-123");
+        jwt.verify(token, process.env.SECRET_KEY);
     next();
   } catch (err) {
       return res.status(401).json({
@@ -30,6 +31,5 @@ app.use((req, res, next) => {
   }
 });
     app.use("/api/v1/", imageRouter);
-    // app.use("/api/v1/", imageRouter);
 
 module.exports = app;
