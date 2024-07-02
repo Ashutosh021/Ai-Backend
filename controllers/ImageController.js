@@ -38,7 +38,7 @@ const generateImage = async (req, res) => {
     res.json({
       status: 'success',
       data: {
-        imageUl: imageUrl,
+        imageUrl: imageUrl,
       }
     });
   } catch (err) {
