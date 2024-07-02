@@ -2,11 +2,11 @@ const axios = require('axios');
 const imageModel = require('../models/imageModel'); 
 
 const historyData = async (req, res) => {
-  const {authToken}=req.body;
+  const userId = req.body.userId;
   try {
-    const history = await imageModel.find(authToken);
+    const history = await imageModel.find({ userId });
     res.json({
-      status: "success",
+      status: "success123",
       msg: "Data fetched successfully",
       history
     });
@@ -24,8 +24,6 @@ const generateImage = async (req, res) => {
   const body = req.body;
   const searchText = body.searchText || "cat"; // Use searchText from request body or default to "cat"bb
   const userEmail = body.userEmail; // Use searchText from request body or default to "cat"bb
-
-
   try {
     // const response = await axios.get(`https://source.unsplash.com/random/800x800/`);
     const response = await axios.get(`https://loremflickr.com/320/240/${searchText}`);
@@ -40,7 +38,7 @@ const generateImage = async (req, res) => {
     res.json({
       status: 'success',
       data: {
-        imageUrl: imageUrl,
+        imageUl: imageUrl,
       }
     });
   } catch (err) {
