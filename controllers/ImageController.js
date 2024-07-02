@@ -23,6 +23,7 @@ const historyData = async (req, res) => {
 const generateImage = async (req, res) => {
   const body = req.body;
   const searchText = body.searchText || "cat"; // Use searchText from request body or default to "cat"bb
+  const userEmail = body.userEmail; // Use searchText from request body or default to "cat"bb
 
 
   try {
@@ -32,7 +33,8 @@ const generateImage = async (req, res) => {
 
     await imageModel.create({
       searchText: searchText,
-      imageUrl: imageUrl // Save the image URL along with the search text
+      imageUrl: imageUrl,// Save the image URL along with the search text
+      userId:userEmail
     });
 
     res.json({
