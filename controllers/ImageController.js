@@ -2,7 +2,7 @@ const axios = require('axios');
 const imageModel = require('../models/imageModel'); 
 
 const historyData = async (req, res) => {
-  const userId = req.body.userId;
+  const userId = req.query.userId;  
   try {
     const history = await imageModel.find({ userId });
     res.json({
@@ -19,20 +19,18 @@ const historyData = async (req, res) => {
   }
 };
 
-
 const generateImage = async (req, res) => {
   const body = req.body;
   const searchText = body.searchText || "cat"; 
   const userEmail = body.userEmail;
   try {
-    // const response = await axios.get(`https://source.unsplash.com/random/800x800/`);
     const response = await axios.get(`https://loremflickr.com/320/240/${searchText}`);
     const imageUrl = response.request.res.responseUrl; // Get the final URL of the random image
 
     await imageModel.create({
       searchText: searchText,
       imageUrl: imageUrl,// Save the image URL along with the search text
-      userId:userEmail
+      userId: userEmail
     });
 
     res.json({
