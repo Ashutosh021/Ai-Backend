@@ -36,7 +36,8 @@ const Login = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: true, // Only send over HTTPS
-      sameSite: "None" // Required for cross-site cookies
+      sameSite: "None", // Required for cross-site cookies
+      domain: "https://ai-backend-1azo.onrender.com" 
   });
     res.status(200).json({
       success: true,
@@ -84,7 +85,8 @@ const Signup = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: true, // Only send over HTTPS
-      sameSite: "None" // Required for cross-site cookies
+      sameSite: "None", // Required for cross-site cookies
+      domain: "https://ai-backend-1azo.onrender.com" 
   });
     res.status(201).json({
       success: true,
