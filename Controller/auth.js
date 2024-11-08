@@ -33,7 +33,11 @@ const Login = async (req, res) => {
     });
 
     // Set the token in a cookie and return user data
-    res.cookie("token", token);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true, // Only send over HTTPS
+      sameSite: "None" // Required for cross-site cookies
+  });
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -77,7 +81,11 @@ const Signup = async (req, res) => {
     });
 
     // Set the token in a cookie and return user data
-    res.cookie("token", token);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true, // Only send over HTTPS
+      sameSite: "None" // Required for cross-site cookies
+  });
     res.status(201).json({
       success: true,
       message: "User registered successfully",
