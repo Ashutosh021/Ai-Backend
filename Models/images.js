@@ -1,25 +1,25 @@
 const mongoose = require("mongoose");
-const imageSchema = mongoose.Schema({
-  searchText: {
-    type: String,
-    required: true,
-  },
-  userId:{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "ai-images",
+
+const imageSchema = mongoose.Schema(
+  {
+    searchText: {
+      type: String,
+      required: true,
     },
-  imageUrl: {
-    type: String,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+    imageUrl: {
+      type: String,
+    },
+    imagePublicId: {
+      type: String,
+    },
   },
-  createdAt: {
-    type: Date,
-    default: new Date(),
-  },
-  updatedAt: {
-    type: Date,
-    default: new Date(),
-  },
-});
+  { timestamps: true } 
+);
+
 
 const imageModel = mongoose.model("ai-images", imageSchema);
 module.exports = imageModel;

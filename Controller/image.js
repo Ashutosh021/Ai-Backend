@@ -1,17 +1,15 @@
-const cloudinary = require("../Utils/cloudinary"); // Cloudinary configuration
-const imageModel = require("../Models/images"); // Image Models
-const userModel = require("../Models/user"); // User Models
+const cloudinary = require("../Utils/cloudinary");
+const imageModel = require("../Models/images");
+const userModel = require("../Models/user");
 require("dotenv").config();
-
 
 const Image = async (req, res) => {
   const { searchText } = req.body;
   const userId = req.user.id;
+
   try {
-    // Dynamically import `node-fetch`
     const fetch = (await import("node-fetch")).default;
 
-    // Step 1: Generate Image from Hugging Face
     const response = await fetch(
       "https://api-inference.huggingface.co/models/ZB-Tech/Text-to-Image",
       {
@@ -25,73 +23,82 @@ const Image = async (req, res) => {
     );
 
     const blob = await response.blob();
+    const buffer = await blob.arrayBuffer();
 
-    // Step 2: Upload to Cloudinary
-    const cloudinaryResponse = await new Promise(async (resolve, reject) => {
-      try {
-        const buffer = await blob.arrayBuffer();
-        const uploadStream = cloudinary.uploader.upload_stream(
-          { resource_type: "image",folder: "Ai-Temp"},
-          (error, result) => {
-            if (error)
-              reject(new Error("Failed to upload image to Cloudinary"));
-            else resolve(result);
-          }
-        );
-        uploadStream.end(Buffer.from(buffer)); // Pass the buffer here
-      } catch (err) {
-        reject(err);
-      }
+    const cloudinaryResponse = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { resource_type: "image", folder: "Ai-Images" },
+        (error, result) => {
+          if (error) reject(new Error("Failed to upload image to Cloudinary"));
+          else resolve(result);
+        }
+      );
+      uploadStream.end(Buffer.from(buffer));
     });
 
-    const imageUrl = cloudinaryResponse.secure_url;
-
-    // Step 3: Save to MongoDB
-    const newImage = new imageModel({
+    const newImage = await imageModel.create({
       searchText,
       userId,
-      imageUrl,
+      imageUrl: cloudinaryResponse.secure_url,
+      imagePublicId: cloudinaryResponse.public_id,
     });
-    await newImage.save();
 
-    // Optionally update user with image reference
     await userModel.findByIdAndUpdate(userId, {
       $push: { images: newImage._id },
     });
 
-    // Step 4: Return image URL to frontend
-    res.status(200).json({ imageUrl });
+    res.status(200).json({ imageUrl: newImage.imageUrl });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-
-
-// Controller to get the user's image generation history
 const getHistory = async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming you store the user ID in req.user from authentication middleware
-
-    // Fetch history of generated images by user
-    const history = await imageModel.find({ userId })
-      .sort({ createdAt: -1 }) // Sort by most recent first
+    const userId = req.user.id;
+    const history = await imageModel
+      .find({ userId })
+      .sort({ createdAt: -1 })
       .exec();
-
-    if (!history || history.length === 0) {
+    if (!history.length)
       return res.status(404).json({ message: "No history found." });
-    }
-
-    // Return the history of generated images
     res.status(200).json({ history });
   } catch (error) {
-    console.error("Error fetching history:", error);
-    res.status(500).json({ message: "Failed to fetch history. Please try again." });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch history.", error: error.message });
   }
 };
 
+const deleteImage = async (req, res) => {
+  try {
+    const imageId = req.params.postId;
+    const post = await imageModel.findById(imageId);
 
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
 
+    if (post.imagePublicId) {
+      try {
+        await cloudinary.uploader.destroy(post.imagePublicId);
+        console.log("Media deleted from Cloudinary.");
+      } catch (cloudinaryError) {
+        console.error("Error deleting media from Cloudinary:", cloudinaryError);
+      }
+    }
 
+    await imageModel.findByIdAndDelete(imageId);
 
-module.exports = { Image,getHistory };
+    await userModel.findByIdAndUpdate(post.userId, {
+      $pull: { images: imageId },
+    });
+
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting post:", err);
+    res.status(500).json({ message: "Error deleting post", error: err.message });
+  }
+};
+
+module.exports = { Image, getHistory, deleteImage };

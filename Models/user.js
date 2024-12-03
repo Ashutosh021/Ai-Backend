@@ -16,14 +16,15 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    // minlength: 6,
+    minlength: 6, 
   },
   images: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "images",
+      ref: "ai-images", 
     },
-  ]
+  ],
 });
+
 
 module.exports = mongoose.model("user", userSchema);

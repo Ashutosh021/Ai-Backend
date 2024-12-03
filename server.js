@@ -26,9 +26,9 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/image', imageRoutes);
-app.use('/api/check',isAuthenticated,(req,res)=>{
-  res.json({ success: true, message: 'Auth OKKKK' });
-})
+app.use('/getuser',isAuthenticated, (req,res)=>{
+  res.status(200).json(req.user)
+});
 
 
 const PORT = process.env.PORT || 5000;
